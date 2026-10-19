@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PGC Slabs | Tienda de Cartas Pokémon Gradeadas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; }
+    .slab-card {
+      background: linear-gradient(145deg, #161f33 0%, #0f1523 100%);
+      border: 1px solid #26334d;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .slab-card:hover {
+      transform: translateY(-4px);
+      border-color: #eab308;
+      box-shadow: 0 12px 30px -10px rgba(234, 179, 8, 0.25);
+    }
+    .grade-badge-10 { background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%); color: #000; }
+    .grade-badge-9 { background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); color: #000; }
+    .grade-badge-8 { background: linear-gradient(135deg, #d97706 0%, #92400e 100%); color: #fff; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-yellow-500 flex items-center justify-center font-extrabold text-black text-xl shadow-md">
+          PGC
+        </div>
+        <div>
+          <span class="font-extrabold text-lg tracking-tight block leading-none">PGC SLABS</span>
+          <span class="text-xs text-slate-400">Cartas Pokémon Certificadas</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a href="#catalogo" class="text-sm text-slate-300 hover:text-yellow-400 hidden sm:inline">Catálogo</a>
+        <a href="#garantia" class="text-sm text-slate-300 hover:text-yellow-400 hidden sm:inline">Autenticidad</a>
+        <button onclick="toggleCartModal()" class="relative bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 border border-slate-700">
+          <span>🛒 Carrito</span>
+          <span id="cart-count" class="bg-yellow-500 text-black font-bold px-2 py-0.5 rounded-full text-xs">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden border-b border-slate-800 bg-gradient-to-b from-slate-900 to-[#0b0f19]">
+    <div class="max-w-6xl mx-auto px-4 py-12 sm:py-16 text-center">
+      <span class="inline-block bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
+        Stock Físico en Argentina • Envíos a todo el país
+      </span>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
+        Coleccioná Cartas Pokémon <span class="text-yellow-400">Ya Gradeadas</span>
+      </h1>
+      <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base mb-8">
+        Slabs sellados por ultrasonido, verificados y listos para enviar. Comprá directo en pesos argentinos con pasarela de pago segura y seguimiento por WhatsApp.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="#catalogo" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-xl text-sm transition">
+          Ver Cartas en Stock
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTROS Y BUSCADOR -->
+  <section id="catalogo" class="max-w-6xl mx-auto px-4 pt-10 pb-6 w-full">
+    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+      <div class="w-full sm:w-1/2">
+        <input
+          type="text"
+          id="search-input"
+          oninput="renderCatalog()"
+          placeholder="Buscar por Pokémon, set o N° de certificado..."
+          class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+        />
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <label class="text-xs text-slate-400 font-semibold uppercase">Filtrar Nota:</label>
+        <select id="grade-filter" onchange="renderCatalog()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500">
+          <option value="ALL">Todas las notas</option>
+          <option value="10">Nota 10 (Gem Mint)</option>
+          <option value="9.5">Nota 9.5 (Mint+)</option>
+          <option value="9">Nota 9 (Mint)</option>
+          <option value="8">Nota 8 o menor</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRILLA DE CARTAS -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Se llena automáticamente desde JavaScript -->
+    </div>
+  </main>
+
+  <!-- SECCIÓN GARANTÍA -->
+  <section id="garantia" class="border-t border-slate-800 bg-slate-900/40 py-12 mt-12">
+    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="text-2xl mb-2">🛡️</div>
+        <h3 class="font-bold text-base mb-1">100% Originales y Selladas</h3>
+        <p class="text-xs text-slate-400">Todas las cartas están autenticadas y encapsuladas en acrílico con protección UV.</p>
+      </div>
+      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="text-2xl mb-2">💳</div>
+        <h3 class="font-bold text-base mb-1">Pago Seguro en Pesos (ARS)</h3>
+        <p class="text-xs text-slate-400">Aboná mediante Mercado Pago (dinero en cuenta, débito o tarjeta de crédito) o transferencia.</p>
+      </div>
+      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+        <div class="text-2xl mb-2">📦</div>
+        <h3 class="font-bold text-base mb-1">Despacho Protegido</h3>
+        <p class="text-xs text-slate-400">Empaque blindado con pluribol y caja rígida. Coordinación inmediata por WhatsApp tras el pago.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    <p>© 2026 PGC Slabs Argentina. Todos los precios están expresados en Pesos Argentinos (ARS).</p>
+  </footer>
+
+  <!-- MODAL DE CARRITO Y CHECKOUT -->
+  <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+        <h2 class="text-lg font-extrabold text-white">Finalizar Compra</h2>
+        <button onclick="toggleCartModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <!-- Lista de items -->
+      <div id="cart-items" class="space-y-3 mb-6"></div>
+
+      <!-- Total -->
+      <div class="flex justify-between items-center bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
+        <span class="text-sm text-slate-400 font-semibold">Total a Pagar:</span>
+        <span id="cart-total" class="text-xl font-extrabold text-yellow-400">$0 ARS</span>
+      </div>
+
+      <!-- Formulario de datos para envío -->
+      <div id="checkout-form" class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Tus datos para el envío</h3>
+        <input type="text" id="buyer-name" placeholder="Nombre y Apellido *" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" required />
+        <input type="text" id="buyer-city" placeholder="Ciudad / Provincia / Código Postal *" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" required />
+        <select id="shipping-method" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+          <option value="Correo Argentino a domicilio">Envío por Correo Argentino (Domicilio)</option>
+          <option value="Correo Argentino a sucursal">Envío por Correo Argentino (Sucursal)</option>
+          <option value="Retiro / Moto Mensajería GBA-CABA">Retiro / Moto Mensajería (AMBA)</option>
+        </select>
+
+        <div class="pt-4 space-y-3 border-t border-slate-800 mt-4">
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong>Paso 1:</strong> Realizá el pago en la pasarela haciendo clic en el botón azul.<br>
+            <strong>Paso 2:</strong> Tocá el botón verde para enviarnos tu pedido y el comprobante por WhatsApp.
+          </p>
+
+          <!-- Botón Pasarela de Pago -->
+          <button onclick="goToPaymentGateway()" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <span>💳 1. Pagar en Pasarela de Pago</span>
+          </button>
+
+          <!-- Botón Confirmar por WhatsApp -->
+          <button onclick="sendOrderToWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <span>📲 2. Enviar Pedido por WhatsApp</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURACIÓN Y CATÁLOGO EN JAVASCRIPT -->
+  <script>
+    // =========================================================================
+    // 1. CONFIGURACIÓN DEL VENDEDOR (EDITÁ ESTOS DOS DATOS CON LOS TUYOS)
+    // =========================================================================
+    const CONFIG = {
+      // Poné tu número con código de país (549 para Argentina + código de área sin 0 + número sin 15)
+      whatsappNumber: "5491112345678",
+
+      // Link general de tu pasarela (ej. tu alias/link de cobro de Mercado Pago)
+      // Además, cada carta abajo puede tener su propio link de pago individual.
+      defaultPaymentLink: "https://link.mercadopago.com.ar/tutienda"
+    };
+
+    // =========================================================================
+    // 2. CATÁLOGO DE CARTAS GRADEADAS EN STOCK
+    // =========================================================================
+    const CARDS_INVENTORY = [
+      {
+        id: "PGC-00142",
+        name: "Charizard ex - 199/165",
+        set: "Pokémon 151 (Español)",
+        grade: "10",
+        subgrades: "Centrado 10 | Esquinas 10 | Bordes 9.5 | Superficie 10",
+        priceARS: 185000,
+        image: "https://images.pokemontcg.io/sv3pt5/199_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-charizard", // Link directo al checkout de esta carta
+        stock: 1
+      },
+      {
+        id: "PGC-00189",
+        name: "Umbreon VMAX (Alt Art) - 215/203",
+        set: "Evolving Skies (Inglés)",
+        grade: "9.5",
+        subgrades: "Centrado 9.5 | Esquinas 10 | Bordes 9.5 | Superficie 9.5",
+        priceARS: 920000,
+        image: "https://images.pokemontcg.io/swsh7/215_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-umbreon",
+        stock: 1
+      },
+      {
+        id: "PGC-00204",
+        name: "Pikachu con Sombrero Gris - 085",
+        set: "SV Black Star Promos",
+        grade: "10",
+        subgrades: "Centrado 10 | Esquinas 10 | Bordes 10 | Superficie 10",
+        priceARS: 240000,
+        image: "https://images.pokemontcg.io/svp/85_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-pikachu",
+        stock: 1
+      },
+      {
+        id: "PGC-00215",
+        name: "Lugia V (Alt Art) - 186/195",
+        set: "Silver Tempest",
+        grade: "9",
+        subgrades: "Centrado 9 | Esquinas 9.5 | Bordes 9 | Superficie 9",
+        priceARS: 160000,
+        image: "https://images.pokemontcg.io/swsh12/186_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-lugia",
+        stock: 1
+      },
+      {
+        id: "PGC-00231",
+        name: "Mew ex - 205/165 (Hyper Rare Gold)",
+        set: "Pokémon 151",
+        grade: "10",
+        subgrades: "Centrado 10 | Esquinas 9.5 | Bordes 10 | Superficie 10",
+        priceARS: 65000,
+        image: "https://images.pokemontcg.io/sv3pt5/205_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-mew",
+        stock: 1
+      },
+      {
+        id: "PGC-00250",
+        name: "Blastoise ex - 200/165",
+        set: "Pokémon 151",
+        grade: "8",
+        subgrades: "Centrado 8.5 | Esquinas 8 | Bordes 8.5 | Superficie 8",
+        priceARS: 58000,
+        image: "https://images.pokemontcg.io/sv3pt5/200_hires.png",
+        paymentLink: "https://mpago.la/ejemplo-blastoise",
+        stock: 1
+      }
+    ];
+
+    // =========================================================================
+    // 3. LÓGICA DE LA TIENDA (NO NECESITÁS MODIFICAR NADA DE ACÁ PARA ABAJO)
+    // =========================================================================
+    let cart = [];
+
+    function formatARS(amount) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    function getBadgeClass(grade) {
+      const g = parseFloat(grade);
+      if (g >= 9.5) return 'grade-badge-10';
+      if (g >= 9) return 'grade-badge-9';
+      return 'grade-badge-8';
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('cards-grid');
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const gradeFilter = document.getElementById('grade-filter').value;
+
+      const filtered = CARDS_INVENTORY.filter(card => {
+        const matchesSearch =
+          card.name.toLowerCase().includes(search) ||
+          card.set.toLowerCase().includes(search) ||
+          card.id.toLowerCase().includes(search);
+
+        let matchesGrade = true;
+        if (gradeFilter !== 'ALL') {
+          if (gradeFilter === '8') {
+            matchesGrade = parseFloat(card.grade) <= 8.5;
+          } else {
+            matchesGrade = card.grade === gradeFilter;
+          }
+        }
+        return matchesSearch && matchesGrade;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No se encontraron cartas con ese filtro.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(card => `
+        <div class="slab-card rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <!-- Encabezado de la Etiqueta del Slab -->
+            <div class="flex justify-between items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 mb-4">
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 block">Certificado #${card.id}</span>
+                <span class="text-xs font-bold text-white">${card.set}</span>
+              </div>
+              <div class="${getBadgeClass(card.grade)} px-3 py-1 rounded-lg text-center shadow">
+                <span class="text-[10px] font-bold uppercase block leading-none">GEM</span>
+                <span class="text-lg font-extrabold leading-none">${card.grade}</span>
+              </div>
+            </div>
+
+            <!-- Imagen de la Carta -->
+            <div class="relative bg-slate-950/60 rounded-xl p-4 mb-4 flex justify-center items-center h-64 border border-slate-800/80">
+              <img src="${card.image}" alt="${card.name}" class="max-h-full object-contain rounded drop-shadow-2xl" />
+            </div>
+
+            <!-- Nombre y Subgrades -->
+            <h3 class="font-extrabold text-lg text-white mb-1">${card.name}</h3>
+            <p class="text-[11px] text-slate-400 bg-slate-900/70 p-2 rounded-lg border border-slate-800/80 mb-4">
+              ${card.subgrades}
+            </p>
+          </div>
+
+          <!-- Precio y Botón de Compra -->
+          <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase block">Precio Final</span>
+              <span class="text-xl font-extrabold text-yellow-400">${formatARS(card.priceARS)}</span>
+            </div>
+            <button
+              onclick="buyNow('${card.id}')"
+              class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md"
+            >
+              Comprar Slab
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function buyNow(cardId) {
+      const card = CARDS_INVENTORY.find(c => c.id === cardId);
+      if (!card) return;
+      if (!cart.find(item => item.id === cardId)) {
+        cart.push(card);
+      }
+      updateCartUI();
+      toggleCartModal(true);
+    }
+
+    function removeFromCart(cardId) {
+      cart = cart.filter(c => c.id !== cardId);
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      document.getElementById('cart-count').innerText = cart.length;
+      const itemsContainer = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Tu carrito está vacío.</p>`;
+        totalEl.innerText = "$0 ARS";
+        return;
+      }
+
+      const total = cart.reduce((acc, item) => acc + item.priceARS, 0);
+      totalEl.innerText = `${formatARS(total)} ARS`;
+
+      itemsContainer.innerHTML = cart.map(item => `
+        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-800">
+          <div>
+            <p class="text-sm font-bold text-white">${item.name} <span class="text-yellow-400">(Nota ${item.grade})</span></p>
+            <p class="text-xs text-slate-400">Cert #${item.id} • ${formatARS(item.priceARS)}</p>
+          </div>
+          <button onclick="removeFromCart('${item.id}')" class="text-xs text-red-400 hover:text-red-300 font-semibold px-2">
+            Quitar
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function toggleCartModal(forceOpen = null) {
+      const modal = document.getElementById('cart-modal');
+      if (forceOpen === true) {
+        modal.classList.remove('hidden');
+      } else if (forceOpen === false) {
+        modal.classList.add('hidden');
+      } else {
+        modal.classList.toggle('hidden');
+      }
+    }
+
+    function goToPaymentGateway() {
+      if (cart.length === 0) {
+        alert("Agregá al menos una carta gradeada al carrito.");
+        return;
+      }
+      // Si compró 1 sola carta y tiene link propio de Mercado Pago, abre ese link directo.
+      // Si compró varias, abre tu link de cobro general de pasarela.
+      const paymentUrl = (cart.length === 1 && cart[0].paymentLink)
+        ? cart[0].paymentLink
+        : CONFIG.defaultPaymentLink;
+
+      window.open(paymentUrl, '_blank');
+    }
+
+    function sendOrderToWhatsApp() {
+      if (cart.length === 0) {
+        alert("Tu carrito está vacío.");
+        return;
+      }
+      const name = document.getElementById('buyer-name').value.trim();
+      const city = document.getElementById('buyer-city').value.trim();
+      const shipping = document.getElementById('shipping-method').value;
+
+      if (!name || !city) {
+        alert("Por favor completá tu Nombre y Ciudad para coordinar el envío.");
+        return;
+      }
+
+      const total = cart.reduce((acc, item) => acc + item.priceARS, 0);
+      const itemsList = cart.map(i => `- ${i.name} (Nota ${i.grade} | Cert #${i.id}): ${formatARS(i.priceARS)}`).join('%0A');
+
+      const message =
+        `¡Hola! Realicé una compra en la web de *PGC Slabs*:%0A%0A` +
+        `*CARTAS SELECCIONADAS:*%0A${itemsList}%0A%0A` +
+        `*TOTAL:* ${formatARS(total)} ARS%0A%0A` +
+        `*DATOS DE ENVÍO:*%0A` +
+        `- Nombre: ${encodeURIComponent(name)}%0A` +
+        `- Destino: ${encodeURIComponent(city)}%0A` +
+        `- Método: ${encodeURIComponent(shipping)}%0A%0A` +
+        `Te adjunto el comprobante de pago de la pasarela acá abajo:`;
+
+      const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${message}`;
+      window.open(waUrl, '_blank');
+    }
+
+    // Inicializar catálogo al cargar la página
+    renderCatalog();
+  </script>
+</body>
+</html>
