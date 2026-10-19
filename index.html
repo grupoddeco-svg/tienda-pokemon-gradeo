@@ -1,457 +1,786 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PGC Slabs | Tienda de Cartas Pokémon Gradeadas</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fennec — Self-Driving Workflows</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Questrial&family=Urbanist:wght@300;400;500&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f8fafc; }
-    .slab-card {
-      background: linear-gradient(145deg, #161f33 0%, #0f1523 100%);
-      border: 1px solid #26334d;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    :root {
+      --white: #ffffff;
+      --ink: #1a1410;
+      --orange: #e8742a;
     }
-    .slab-card:hover {
-      transform: translateY(-4px);
-      border-color: #eab308;
-      box-shadow: 0 12px 30px -10px rgba(234, 179, 8, 0.25);
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    .grade-badge-10 { background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%); color: #000; }
-    .grade-badge-9 { background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); color: #000; }
-    .grade-badge-8 { background: linear-gradient(135deg, #d97706 0%, #92400e 100%); color: #fff; }
+
+    html, body {
+      height: 100%;
+      background: #f4ece4;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: "Urbanist", "Questrial", system-ui, sans-serif;
+      color: var(--white);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      isolation: isolate;
+      border-radius: 0;
+      background: #b5571c url("https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261016_125845_ec7f8569-08dd-4a78-8310-9e094f5dd0a3.png") center / cover no-repeat;
+    }
+
+    .hero__video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    .hero__shade {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(90deg, rgba(60, 22, 4, .38) 0%, rgba(60, 22, 4, .12) 28%, rgba(0, 0, 0, 0) 50%),
+        linear-gradient(180deg, rgba(40, 14, 2, .18) 0%, rgba(0, 0, 0, 0) 16%);
+    }
+
+    #fox {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    #fox.is-ready {
+      opacity: 1;
+    }
+
+    /* TOP NAV */
+    .nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 20px 0 20px;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: rise .9s cubic-bezier(.2, .7, .2, 1) .1s forwards;
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      font-family: "Questrial", sans-serif;
+      font-size: 13.5px;
+      letter-spacing: .01em;
+    }
+
+    .nav__links a {
+      color: var(--white);
+      text-decoration: none;
+      opacity: .95;
+      transition: opacity .2s;
+    }
+
+    .nav__links a:hover {
+      opacity: .7;
+    }
+
+    .toggle {
+      width: 35px;
+      height: 17px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .28);
+      border: 0;
+      margin: 0 -2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle::before,
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--white);
+    }
+
+    .toggle::before {
+      left: 2px;
+    }
+
+    .toggle::after {
+      left: 11px;
+      opacity: .55;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 44px;
+      padding: 0 16px 0 6px;
+      background: var(--white);
+      border-radius: 999px;
+      color: var(--ink);
+      box-shadow: 0 6px 24px rgba(80, 30, 0, .12);
+      position: relative;
+      z-index: 2;
+      transition: box-shadow .5s ease;
+    }
+
+    .hero.is-menu-open .brand {
+      box-shadow: 0 0 0 transparent;
+    }
+
+    .brand__logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--orange);
+      display: grid;
+      place-items: center;
+    }
+
+    .brand__logo svg {
+      width: 20px;
+      height: 20px;
+      fill: #1a1410;
+      display: block;
+    }
+
+    .brand__name {
+      font-family: "Questrial", sans-serif;
+      font-size: 13px;
+      letter-spacing: .62em;
+      padding-left: 6px;
+      margin-right: 6px;
+    }
+
+    .brand__menu {
+      width: 28px;
+      height: 28px;
+      margin-right: -6px;
+      background: transparent;
+      border: 0;
+      border-radius: 50%;
+      position: relative;
+      cursor: pointer;
+      transition: background .3s;
+    }
+
+    .brand__menu:hover {
+      background: rgba(26, 20, 16, .06);
+    }
+
+    .brand__menu span {
+      position: absolute;
+      left: 6px;
+      width: 16px;
+      height: 1.6px;
+      background: var(--ink);
+      border-radius: 2px;
+      transition:
+        transform .55s cubic-bezier(.76, 0, .24, 1),
+        opacity .3s,
+        width .45s cubic-bezier(.76, 0, .24, 1);
+    }
+
+    .brand__menu span:nth-child(1) { top: 8.6px; }
+    .brand__menu span:nth-child(2) { top: 13.2px; }
+    .brand__menu span:nth-child(3) { top: 17.8px; }
+
+    .brand__menu:hover span:nth-child(2) {
+      width: 11px;
+    }
+
+    .hero.is-menu-open .brand__menu span:nth-child(1) {
+      transform: translateY(4.6px) rotate(45deg);
+    }
+
+    .hero.is-menu-open .brand__menu span:nth-child(2) {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+
+    .hero.is-menu-open .brand__menu span:nth-child(3) {
+      transform: translateY(-4.6px) rotate(-45deg);
+    }
+
+    /* HEADLINE */
+    .headline {
+      position: absolute;
+      left: 18px;
+      top: 46%;
+      z-index: 5;
+      font-family: "Questrial", sans-serif;
+      font-weight: 400;
+      font-size: clamp(30px, 2.95vw, 44px);
+      line-height: .98;
+      letter-spacing: -.005em;
+      color: var(--white);
+      text-shadow: 0 2px 18px rgba(70, 25, 0, .25);
+    }
+
+    .headline span {
+      display: block;
+      width: max-content;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: rise .9s cubic-bezier(.2, .7, .2, 1) forwards;
+    }
+
+    .headline span:nth-child(1) { animation-delay: .25s; }
+    .headline span:nth-child(2) { animation-delay: .35s; }
+    .headline span:nth-child(3) { animation-delay: .45s; }
+    .headline span:nth-child(4) { animation-delay: .55s; }
+
+    .headline .u {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 6px;
+    }
+
+    .headline .indent {
+      margin-left: 3.5em;
+    }
+
+    @keyframes rise {
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* HAMBURGER MENU */
+    .menu-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      background: rgba(48, 18, 2, .28);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .6s ease, backdrop-filter .8s ease, -webkit-backdrop-filter .8s ease, visibility 0s .8s;
+    }
+
+    .hero.is-menu-open .menu-backdrop {
+      opacity: 1;
+      visibility: visible;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity .6s ease, backdrop-filter .8s ease, -webkit-backdrop-filter .8s ease, visibility 0s;
+    }
+
+    .menu {
+      --pill-w: 200px;
+      position: absolute;
+      z-index: 7;
+      top: 17px;
+      right: 20px;
+      width: min(400px, calc(100vw - 32px));
+      padding: 76px 30px 26px;
+      background: var(--white);
+      color: var(--ink);
+      border-radius: 24px;
+      box-shadow: 0 30px 80px -20px rgba(70, 25, 0, .45);
+      clip-path: inset(0 0 calc(100% - 44px) calc(100% - var(--pill-w)) round 22px);
+      visibility: hidden;
+      transition: clip-path .75s cubic-bezier(.76, 0, .24, 1), visibility 0s .75s;
+    }
+
+    .hero.is-menu-open .menu {
+      clip-path: inset(0 0 0 0 round 24px);
+      visibility: visible;
+      transition: clip-path .85s cubic-bezier(.76, 0, .24, 1), visibility 0s;
+    }
+
+    .menu__list {
+      list-style: none;
+    }
+
+    .menu__item {
+      overflow: hidden;
+      border-bottom: 1px solid rgba(26, 20, 16, .08);
+    }
+
+    .menu__link {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 12px 0 10px;
+      color: var(--ink);
+      text-decoration: none;
+      font-family: "Questrial", sans-serif;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: -.01em;
+      transform: translateY(110%);
+      transition: transform .5s cubic-bezier(.76, 0, .24, 1), color .3s;
+    }
+
+    .hero.is-menu-open .menu__link {
+      transform: none;
+      transition: transform .9s cubic-bezier(.2, .8, .2, 1), color .3s;
+    }
+
+    .hero.is-menu-open .menu__item:nth-child(1) .menu__link { transition-delay: .32s, 0s; }
+    .hero.is-menu-open .menu__item:nth-child(2) .menu__link { transition-delay: .38s, 0s; }
+    .hero.is-menu-open .menu__item:nth-child(3) .menu__link { transition-delay: .44s, 0s; }
+    .hero.is-menu-open .menu__item:nth-child(4) .menu__link { transition-delay: .50s, 0s; }
+    .hero.is-menu-open .menu__item:nth-child(5) .menu__link { transition-delay: .56s, 0s; }
+
+    .menu__link:hover {
+      color: var(--orange);
+    }
+
+    .menu__link small {
+      font-size: 11px;
+      letter-spacing: .12em;
+      color: var(--orange);
+      transform: translateY(-14px);
+    }
+
+    .menu__link .arrow {
+      margin-left: auto;
+      font-size: 20px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity .3s, transform .4s cubic-bezier(.2, .7, .2, 1);
+    }
+
+    .menu__link:hover .arrow {
+      opacity: 1;
+      transform: none;
+    }
+
+    .menu__foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 26px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .3s, transform .4s;
+    }
+
+    .hero.is-menu-open .menu__foot {
+      opacity: 1;
+      transform: none;
+      transition: opacity .6s .62s, transform .8s .62s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .menu__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 8px 0 20px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--white);
+      font-family: "Questrial", sans-serif;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .menu__cta i {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--orange);
+      display: grid;
+      place-items: center;
+      font-style: normal;
+      transition: transform .45s cubic-bezier(.2, .7, .2, 1);
+    }
+
+    .menu__cta:hover i {
+      transform: rotate(-45deg);
+    }
+
+    .menu__social {
+      display: flex;
+      gap: 14px;
+      font-size: 12.5px;
+    }
+
+    .menu__social a {
+      color: rgba(26, 20, 16, .6);
+      text-decoration: none;
+      transition: color .3s;
+    }
+
+    .menu__social a:hover {
+      color: var(--ink);
+    }
+
+    /* MOBILE */
+    @media (max-width: 720px) {
+      .nav {
+        padding: 14px 16px 0;
+      }
+
+      .nav__links {
+        gap: 16px;
+        font-size: 12.5px;
+      }
+
+      .hide-sm {
+        display: none;
+      }
+
+      .brand {
+        height: 38px;
+        gap: 10px;
+        padding: 0 12px 0 4px;
+      }
+
+      .brand__logo {
+        width: 28px;
+        height: 28px;
+      }
+
+      .brand__name {
+        letter-spacing: .42em;
+        font-size: 12px;
+      }
+
+      .headline {
+        top: auto;
+        bottom: 64px;
+        left: 16px;
+        font-size: 34px;
+      }
+
+      .menu {
+        top: 14px;
+        right: 16px;
+        padding: 66px 22px 22px;
+        clip-path: inset(0 0 calc(100% - 38px) calc(100% - var(--pill-w)) round 19px);
+      }
+
+      .menu__link {
+        font-size: 28px;
+      }
+    }
+
+    /* REDUCED MOTION */
+    @media (prefers-reduced-motion: reduce) {
+      .nav,
+      .headline span {
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
+  <main class="hero">
+    <video
+      class="hero__video"
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261016_125941_6c5f1180-2f4e-44ec-b90c-aa0b05e5109b.mp4"
+      poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261016_125845_ec7f8569-08dd-4a78-8310-9e094f5dd0a3.png"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+    ></video>
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-30 bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-800">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-yellow-500 flex items-center justify-center font-extrabold text-black text-xl shadow-md">
-          PGC
-        </div>
-        <div>
-          <span class="font-extrabold text-lg tracking-tight block leading-none">PGC SLABS</span>
-          <span class="text-xs text-slate-400">Cartas Pokémon Certificadas</span>
+    <div class="hero__shade"></div>
+
+    <canvas id="fox" aria-label="Cute 3D red fox holding a boba tea"></canvas>
+
+    <h1 class="headline">
+      <span>streamlined</span>
+      <span class="u">operations</span>
+      <span>feel</span>
+      <span class="u indent">breezy</span>
+    </h1>
+
+    <div class="menu-backdrop" data-close></div>
+
+    <nav class="menu" id="menu" aria-label="Main menu">
+      <ul class="menu__list">
+        <li class="menu__item">
+          <a href="#platform" class="menu__link"><small>01</small>platform<span class="arrow">&rarr;</span></a>
+        </li>
+        <li class="menu__item">
+          <a href="#story" class="menu__link"><small>02</small>story<span class="arrow">&rarr;</span></a>
+        </li>
+        <li class="menu__item">
+          <a href="#community" class="menu__link"><small>03</small>community<span class="arrow">&rarr;</span></a>
+        </li>
+        <li class="menu__item">
+          <a href="#billing" class="menu__link"><small>04</small>billing<span class="arrow">&rarr;</span></a>
+        </li>
+        <li class="menu__item">
+          <a href="#connect" class="menu__link"><small>05</small>connect<span class="arrow">&rarr;</span></a>
+        </li>
+      </ul>
+      <div class="menu__foot">
+        <a href="#begin" class="menu__cta">begin today <i>&rarr;</i></a>
+        <div class="menu__social">
+          <a href="#x">x</a>
+          <a href="#discord">discord</a>
+          <a href="#github">github</a>
         </div>
       </div>
+    </nav>
 
-      <div class="flex items-center gap-4">
-        <a href="#catalogo" class="text-sm text-slate-300 hover:text-yellow-400 hidden sm:inline">Catálogo</a>
-        <a href="#garantia" class="text-sm text-slate-300 hover:text-yellow-400 hidden sm:inline">Autenticidad</a>
-        <button onclick="toggleCartModal()" class="relative bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 border border-slate-700">
-          <span>🛒 Carrito</span>
-          <span id="cart-count" class="bg-yellow-500 text-black font-bold px-2 py-0.5 rounded-full text-xs">0</span>
+    <header class="nav">
+      <nav class="nav__links">
+        <a href="#platform">platform</a>
+        <button class="toggle" aria-label="Toggle theme"></button>
+        <a href="#story">story</a>
+        <a href="#community" class="hide-sm">community</a>
+      </nav>
+
+      <div class="brand">
+        <div class="brand__logo">
+          <svg viewBox="0 0 20 20" fill="#1a1410" aria-hidden="true">
+            <circle cx="10" cy="10" r="4.2" />
+            <g id="ray">
+              <path d="M10 0.6 L11.1 4.2 L8.9 4.2 Z" />
+            </g>
+            <use href="#ray" transform="rotate(30 10 10)" />
+            <use href="#ray" transform="rotate(60 10 10)" />
+            <use href="#ray" transform="rotate(90 10 10)" />
+            <use href="#ray" transform="rotate(120 10 10)" />
+            <use href="#ray" transform="rotate(150 10 10)" />
+            <use href="#ray" transform="rotate(180 10 10)" />
+            <use href="#ray" transform="rotate(210 10 10)" />
+            <use href="#ray" transform="rotate(240 10 10)" />
+            <use href="#ray" transform="rotate(270 10 10)" />
+            <use href="#ray" transform="rotate(300 10 10)" />
+            <use href="#ray" transform="rotate(330 10 10)" />
+          </svg>
+        </div>
+        <span class="brand__name">FENNEC</span>
+        <button class="brand__menu" aria-label="Open menu" aria-expanded="false" aria-controls="menu">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="relative overflow-hidden border-b border-slate-800 bg-gradient-to-b from-slate-900 to-[#0b0f19]">
-    <div class="max-w-6xl mx-auto px-4 py-12 sm:py-16 text-center">
-      <span class="inline-block bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
-        Stock Físico en Argentina • Envíos a todo el país
-      </span>
-      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
-        Coleccioná Cartas Pokémon <span class="text-yellow-400">Ya Gradeadas</span>
-      </h1>
-      <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base mb-8">
-        Slabs sellados por ultrasonido, verificados y listos para enviar. Comprá directo en pesos argentinos con pasarela de pago segura y seguimiento por WhatsApp.
-      </p>
-      <div class="flex flex-wrap justify-center gap-3">
-        <a href="#catalogo" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-xl text-sm transition">
-          Ver Cartas en Stock
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FILTROS Y BUSCADOR -->
-  <section id="catalogo" class="max-w-6xl mx-auto px-4 pt-10 pb-6 w-full">
-    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-900/90 p-4 rounded-xl border border-slate-800">
-      <div class="w-full sm:w-1/2">
-        <input
-          type="text"
-          id="search-input"
-          oninput="renderCatalog()"
-          placeholder="Buscar por Pokémon, set o N° de certificado..."
-          class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-        />
-      </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <label class="text-xs text-slate-400 font-semibold uppercase">Filtrar Nota:</label>
-        <select id="grade-filter" onchange="renderCatalog()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500">
-          <option value="ALL">Todas las notas</option>
-          <option value="10">Nota 10 (Gem Mint)</option>
-          <option value="9.5">Nota 9.5 (Mint+)</option>
-          <option value="9">Nota 9 (Mint)</option>
-          <option value="8">Nota 8 o menor</option>
-        </select>
-      </div>
-    </div>
-  </section>
-
-  <!-- GRILLA DE CARTAS -->
-  <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
-    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Se llena automáticamente desde JavaScript -->
-    </div>
+    </header>
   </main>
 
-  <!-- SECCIÓN GARANTÍA -->
-  <section id="garantia" class="border-t border-slate-800 bg-slate-900/40 py-12 mt-12">
-    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-        <div class="text-2xl mb-2">🛡️</div>
-        <h3 class="font-bold text-base mb-1">100% Originales y Selladas</h3>
-        <p class="text-xs text-slate-400">Todas las cartas están autenticadas y encapsuladas en acrílico con protección UV.</p>
-      </div>
-      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-        <div class="text-2xl mb-2">💳</div>
-        <h3 class="font-bold text-base mb-1">Pago Seguro en Pesos (ARS)</h3>
-        <p class="text-xs text-slate-400">Aboná mediante Mercado Pago (dinero en cuenta, débito o tarjeta de crédito) o transferencia.</p>
-      </div>
-      <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-        <div class="text-2xl mb-2">📦</div>
-        <h3 class="font-bold text-base mb-1">Despacho Protegido</h3>
-        <p class="text-xs text-slate-400">Empaque blindado con pluribol y caja rígida. Coordinación inmediata por WhatsApp tras el pago.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-    <p>© 2026 PGC Slabs Argentina. Todos los precios están expresados en Pesos Argentinos (ARS).</p>
-  </footer>
-
-  <!-- MODAL DE CARRITO Y CHECKOUT -->
-  <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
-        <h2 class="text-lg font-extrabold text-white">Finalizar Compra</h2>
-        <button onclick="toggleCartModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
-      </div>
-
-      <!-- Lista de items -->
-      <div id="cart-items" class="space-y-3 mb-6"></div>
-
-      <!-- Total -->
-      <div class="flex justify-between items-center bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
-        <span class="text-sm text-slate-400 font-semibold">Total a Pagar:</span>
-        <span id="cart-total" class="text-xl font-extrabold text-yellow-400">$0 ARS</span>
-      </div>
-
-      <!-- Formulario de datos para envío -->
-      <div id="checkout-form" class="space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Tus datos para el envío</h3>
-        <input type="text" id="buyer-name" placeholder="Nombre y Apellido *" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" required />
-        <input type="text" id="buyer-city" placeholder="Ciudad / Provincia / Código Postal *" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" required />
-        <select id="shipping-method" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-          <option value="Correo Argentino a domicilio">Envío por Correo Argentino (Domicilio)</option>
-          <option value="Correo Argentino a sucursal">Envío por Correo Argentino (Sucursal)</option>
-          <option value="Retiro / Moto Mensajería GBA-CABA">Retiro / Moto Mensajería (AMBA)</option>
-        </select>
-
-        <div class="pt-4 space-y-3 border-t border-slate-800 mt-4">
-          <p class="text-xs text-slate-300 leading-relaxed">
-            <strong>Paso 1:</strong> Realizá el pago en la pasarela haciendo clic en el botón azul.<br>
-            <strong>Paso 2:</strong> Tocá el botón verde para enviarnos tu pedido y el comprobante por WhatsApp.
-          </p>
-
-          <!-- Botón Pasarela de Pago -->
-          <button onclick="goToPaymentGateway()" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg transition">
-            <span>💳 1. Pagar en Pasarela de Pago</span>
-          </button>
-
-          <!-- Botón Confirmar por WhatsApp -->
-          <button onclick="sendOrderToWhatsApp()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg transition">
-            <span>📲 2. Enviar Pedido por WhatsApp</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONFIGURACIÓN Y CATÁLOGO EN JAVASCRIPT -->
   <script>
-    // =========================================================================
-    // 1. CONFIGURACIÓN DEL VENDEDOR (EDITÁ ESTOS DOS DATOS CON LOS TUYOS)
-    // =========================================================================
-    const CONFIG = {
-      // Poné tu número con código de país (549 para Argentina + código de área sin 0 + número sin 15)
-      whatsappNumber: "5491112345678",
+    (function () {
+      const hero = document.querySelector('.hero');
+      const brand = document.querySelector('.brand');
+      const burger = document.querySelector('.brand__menu');
+      const menu = document.getElementById('menu');
+      const backdrop = document.querySelector('.menu-backdrop');
+      const menuLinks = menu.querySelectorAll('a');
 
-      // Link general de tu pasarela (ej. tu alias/link de cobro de Mercado Pago)
-      // Además, cada carta abajo puede tener su propio link de pago individual.
-      defaultPaymentLink: "https://link.mercadopago.com.ar/tutienda"
-    };
-
-    // =========================================================================
-    // 2. CATÁLOGO DE CARTAS GRADEADAS EN STOCK
-    // =========================================================================
-    const CARDS_INVENTORY = [
-      {
-        id: "PGC-00142",
-        name: "Charizard ex - 199/165",
-        set: "Pokémon 151 (Español)",
-        grade: "10",
-        subgrades: "Centrado 10 | Esquinas 10 | Bordes 9.5 | Superficie 10",
-        priceARS: 185000,
-        image: "https://images.pokemontcg.io/sv3pt5/199_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-charizard", // Link directo al checkout de esta carta
-        stock: 1
-      },
-      {
-        id: "PGC-00189",
-        name: "Umbreon VMAX (Alt Art) - 215/203",
-        set: "Evolving Skies (Inglés)",
-        grade: "9.5",
-        subgrades: "Centrado 9.5 | Esquinas 10 | Bordes 9.5 | Superficie 9.5",
-        priceARS: 920000,
-        image: "https://images.pokemontcg.io/swsh7/215_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-umbreon",
-        stock: 1
-      },
-      {
-        id: "PGC-00204",
-        name: "Pikachu con Sombrero Gris - 085",
-        set: "SV Black Star Promos",
-        grade: "10",
-        subgrades: "Centrado 10 | Esquinas 10 | Bordes 10 | Superficie 10",
-        priceARS: 240000,
-        image: "https://images.pokemontcg.io/svp/85_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-pikachu",
-        stock: 1
-      },
-      {
-        id: "PGC-00215",
-        name: "Lugia V (Alt Art) - 186/195",
-        set: "Silver Tempest",
-        grade: "9",
-        subgrades: "Centrado 9 | Esquinas 9.5 | Bordes 9 | Superficie 9",
-        priceARS: 160000,
-        image: "https://images.pokemontcg.io/swsh12/186_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-lugia",
-        stock: 1
-      },
-      {
-        id: "PGC-00231",
-        name: "Mew ex - 205/165 (Hyper Rare Gold)",
-        set: "Pokémon 151",
-        grade: "10",
-        subgrades: "Centrado 10 | Esquinas 9.5 | Bordes 10 | Superficie 10",
-        priceARS: 65000,
-        image: "https://images.pokemontcg.io/sv3pt5/205_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-mew",
-        stock: 1
-      },
-      {
-        id: "PGC-00250",
-        name: "Blastoise ex - 200/165",
-        set: "Pokémon 151",
-        grade: "8",
-        subgrades: "Centrado 8.5 | Esquinas 8 | Bordes 8.5 | Superficie 8",
-        priceARS: 58000,
-        image: "https://images.pokemontcg.io/sv3pt5/200_hires.png",
-        paymentLink: "https://mpago.la/ejemplo-blastoise",
-        stock: 1
-      }
-    ];
-
-    // =========================================================================
-    // 3. LÓGICA DE LA TIENDA (NO NECESITÁS MODIFICAR NADA DE ACÁ PARA ABAJO)
-    // =========================================================================
-    let cart = [];
-
-    function formatARS(amount) {
-      return new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        maximumFractionDigits: 0
-      }).format(amount);
-    }
-
-    function getBadgeClass(grade) {
-      const g = parseFloat(grade);
-      if (g >= 9.5) return 'grade-badge-10';
-      if (g >= 9) return 'grade-badge-9';
-      return 'grade-badge-8';
-    }
-
-    function renderCatalog() {
-      const grid = document.getElementById('cards-grid');
-      const search = document.getElementById('search-input').value.toLowerCase();
-      const gradeFilter = document.getElementById('grade-filter').value;
-
-      const filtered = CARDS_INVENTORY.filter(card => {
-        const matchesSearch =
-          card.name.toLowerCase().includes(search) ||
-          card.set.toLowerCase().includes(search) ||
-          card.id.toLowerCase().includes(search);
-
-        let matchesGrade = true;
-        if (gradeFilter !== 'ALL') {
-          if (gradeFilter === '8') {
-            matchesGrade = parseFloat(card.grade) <= 8.5;
-          } else {
-            matchesGrade = card.grade === gradeFilter;
-          }
+      function syncPillWidth() {
+        if (brand && menu) {
+          menu.style.setProperty('--pill-w', brand.offsetWidth + 'px');
         }
-        return matchesSearch && matchesGrade;
+      }
+
+      menuLinks.forEach((link) => {
+        link.tabIndex = -1;
       });
 
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No se encontraron cartas con ese filtro.</div>`;
-        return;
+      syncPillWidth();
+      window.addEventListener('load', syncPillWidth);
+      window.addEventListener('resize', syncPillWidth);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(syncPillWidth);
       }
 
-      grid.innerHTML = filtered.map(card => `
-        <div class="slab-card rounded-2xl p-5 flex flex-col justify-between">
-          <div>
-            <!-- Encabezado de la Etiqueta del Slab -->
-            <div class="flex justify-between items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 mb-4">
-              <div>
-                <span class="text-[10px] uppercase tracking-widest text-slate-400 block">Certificado #${card.id}</span>
-                <span class="text-xs font-bold text-white">${card.set}</span>
-              </div>
-              <div class="${getBadgeClass(card.grade)} px-3 py-1 rounded-lg text-center shadow">
-                <span class="text-[10px] font-bold uppercase block leading-none">GEM</span>
-                <span class="text-lg font-extrabold leading-none">${card.grade}</span>
-              </div>
-            </div>
-
-            <!-- Imagen de la Carta -->
-            <div class="relative bg-slate-950/60 rounded-xl p-4 mb-4 flex justify-center items-center h-64 border border-slate-800/80">
-              <img src="${card.image}" alt="${card.name}" class="max-h-full object-contain rounded drop-shadow-2xl" />
-            </div>
-
-            <!-- Nombre y Subgrades -->
-            <h3 class="font-extrabold text-lg text-white mb-1">${card.name}</h3>
-            <p class="text-[11px] text-slate-400 bg-slate-900/70 p-2 rounded-lg border border-slate-800/80 mb-4">
-              ${card.subgrades}
-            </p>
-          </div>
-
-          <!-- Precio y Botón de Compra -->
-          <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-            <div>
-              <span class="text-[10px] text-slate-400 uppercase block">Precio Final</span>
-              <span class="text-xl font-extrabold text-yellow-400">${formatARS(card.priceARS)}</span>
-            </div>
-            <button
-              onclick="buyNow('${card.id}')"
-              class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md"
-            >
-              Comprar Slab
-            </button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function buyNow(cardId) {
-      const card = CARDS_INVENTORY.find(c => c.id === cardId);
-      if (!card) return;
-      if (!cart.find(item => item.id === cardId)) {
-        cart.push(card);
-      }
-      updateCartUI();
-      toggleCartModal(true);
-    }
-
-    function removeFromCart(cardId) {
-      cart = cart.filter(c => c.id !== cardId);
-      updateCartUI();
-    }
-
-    function updateCartUI() {
-      document.getElementById('cart-count').innerText = cart.length;
-      const itemsContainer = document.getElementById('cart-items');
-      const totalEl = document.getElementById('cart-total');
-
-      if (cart.length === 0) {
-        itemsContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Tu carrito está vacío.</p>`;
-        totalEl.innerText = "$0 ARS";
-        return;
+      function toggle(open) {
+        const isOpen = typeof open === 'boolean' ? open : !hero.classList.contains('is-menu-open');
+        hero.classList.toggle('is-menu-open', isOpen);
+        burger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        burger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+        menuLinks.forEach((link) => {
+          link.tabIndex = isOpen ? 0 : -1;
+        });
       }
 
-      const total = cart.reduce((acc, item) => acc + item.priceARS, 0);
-      totalEl.innerText = `${formatARS(total)} ARS`;
+      burger.addEventListener('click', () => toggle());
+      backdrop.addEventListener('click', () => toggle(false));
+      menuLinks.forEach((link) => {
+        link.addEventListener('click', () => toggle(false));
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && hero.classList.contains('is-menu-open')) {
+          toggle(false);
+        }
+      });
+    })();
+  </script>
 
-      itemsContainer.innerHTML = cart.map(item => `
-        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-slate-800">
-          <div>
-            <p class="text-sm font-bold text-white">${item.name} <span class="text-yellow-400">(Nota ${item.grade})</span></p>
-            <p class="text-xs text-slate-400">Cert #${item.id} • ${formatARS(item.priceARS)}</p>
-          </div>
-          <button onclick="removeFromCart('${item.id}')" class="text-xs text-red-400 hover:text-red-300 font-semibold px-2">
-            Quitar
-          </button>
-        </div>
-      `).join('');
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    const canvas = document.getElementById('fox');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const scene = new THREE.Scene();
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 6);
+
+    const hemiLight = new THREE.HemisphereLight(0xffe2c0, 0x6b3a12, 1.1);
+    scene.add(hemiLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffc98a, 2.2);
+    keyLight.position.set(-3, 4, 3);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0xffa24d, 1.6);
+    rimLight.position.set(3, 2, -3);
+    scene.add(rimLight);
+
+    const pivot = new THREE.Group();
+    scene.add(pivot);
+
+    let baseX = 0.05;
+    let baseY = 0.05;
+
+    function layout() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const aspect = width / height;
+
+      renderer.setSize(width, height, false);
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+
+      const mobile = width < 720;
+      baseX = mobile ? 0 : 0.05;
+      baseY = mobile ? 0.45 : 0.05;
+      const scale = mobile ? 0.62 : Math.min(1, Math.max(0.75, aspect / 1.78));
+      pivot.scale.setScalar(scale);
     }
 
-    function toggleCartModal(forceOpen = null) {
-      const modal = document.getElementById('cart-modal');
-      if (forceOpen === true) {
-        modal.classList.remove('hidden');
-      } else if (forceOpen === false) {
-        modal.classList.add('hidden');
+    window.addEventListener('resize', layout);
+
+    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    const loader = new GLTFLoader();
+    loader.load(
+      'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261016_125948_52f145de-4509-41e1-9289-523cf0ac9c86.glb',
+      (gltf) => {
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        model.position.sub(center);
+
+        const holder = new THREE.Group();
+        const maxDim = Math.max(size.x, size.y, size.z);
+        holder.scale.setScalar(3.15 / maxDim);
+        holder.add(model);
+        pivot.add(holder);
+
+        model.traverse((child) => {
+          if (child.isMesh && child.material) {
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
+            materials.forEach((mat) => {
+              mat.envMapIntensity = 0.7;
+              if (mat.map) {
+                mat.map.anisotropy = maxAnisotropy;
+              }
+            });
+          }
+        });
+
+        layout();
+        canvas.classList.add('is-ready');
+      }
+    );
+
+    const target = { x: 0, y: 0 };
+    const look = { x: 0, y: 0 };
+
+    window.addEventListener('pointermove', (e) => {
+      target.x = (e.clientX / window.innerWidth) * 2 - 1;
+      target.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const t = clock.getElapsedTime();
+      look.x += (target.x - look.x) * 0.04;
+      look.y += (target.y - look.y) * 0.04;
+
+      if (reducedMotionQuery.matches) {
+        pivot.position.set(baseX + look.x * 0.06, baseY, 0);
+        pivot.rotation.z = 0;
+        pivot.rotation.y = look.x * 0.22;
+        pivot.rotation.x = look.y * 0.1;
       } else {
-        modal.classList.toggle('hidden');
+        const bob = Math.sin(t * 2.2) * 0.09;
+        pivot.position.set(baseX + look.x * 0.06, baseY + bob, 0);
+        pivot.rotation.z = Math.sin(t * 2.2 + 0.6) * 0.025;
+        pivot.rotation.y = look.x * 0.22 + Math.sin(t * 0.9) * 0.05;
+        pivot.rotation.x = look.y * 0.1 + Math.cos(t * 2.2) * 0.02;
       }
+
+      renderer.render(scene, camera);
     }
 
-    function goToPaymentGateway() {
-      if (cart.length === 0) {
-        alert("Agregá al menos una carta gradeada al carrito.");
-        return;
-      }
-      // Si compró 1 sola carta y tiene link propio de Mercado Pago, abre ese link directo.
-      // Si compró varias, abre tu link de cobro general de pasarela.
-      const paymentUrl = (cart.length === 1 && cart[0].paymentLink)
-        ? cart[0].paymentLink
-        : CONFIG.defaultPaymentLink;
-
-      window.open(paymentUrl, '_blank');
-    }
-
-    function sendOrderToWhatsApp() {
-      if (cart.length === 0) {
-        alert("Tu carrito está vacío.");
-        return;
-      }
-      const name = document.getElementById('buyer-name').value.trim();
-      const city = document.getElementById('buyer-city').value.trim();
-      const shipping = document.getElementById('shipping-method').value;
-
-      if (!name || !city) {
-        alert("Por favor completá tu Nombre y Ciudad para coordinar el envío.");
-        return;
-      }
-
-      const total = cart.reduce((acc, item) => acc + item.priceARS, 0);
-      const itemsList = cart.map(i => `- ${i.name} (Nota ${i.grade} | Cert #${i.id}): ${formatARS(i.priceARS)}`).join('%0A');
-
-      const message =
-        `¡Hola! Realicé una compra en la web de *PGC Slabs*:%0A%0A` +
-        `*CARTAS SELECCIONADAS:*%0A${itemsList}%0A%0A` +
-        `*TOTAL:* ${formatARS(total)} ARS%0A%0A` +
-        `*DATOS DE ENVÍO:*%0A` +
-        `- Nombre: ${encodeURIComponent(name)}%0A` +
-        `- Destino: ${encodeURIComponent(city)}%0A` +
-        `- Método: ${encodeURIComponent(shipping)}%0A%0A` +
-        `Te adjunto el comprobante de pago de la pasarela acá abajo:`;
-
-      const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${message}`;
-      window.open(waUrl, '_blank');
-    }
-
-    // Inicializar catálogo al cargar la página
-    renderCatalog();
+    layout();
+    animate();
   </script>
 </body>
 </html>
